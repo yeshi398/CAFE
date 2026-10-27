@@ -1,9 +1,19 @@
-# Who reviews what. Replace the placeholders with your real GitHub usernames.
-# GitHub will automatically ask the owner to review pull requests that touch their folder.
+# Who reviews what. GitHub automatically asks these people to review
+# pull requests that change files in their area.
 
-/backend/    @YOUR-GITHUB-USERNAME
-/frontend/   @FRIEND-GITHUB-USERNAME
+# Backend – Wangmo
+/backend/                 @17wangmo
 
-# Shared files – both of you
-/backend/API.md                    @YOUR-GITHUB-USERNAME @FRIEND-GITHUB-USERNAME
-/README.md                         @YOUR-GITHUB-USERNAME @FRIEND-GITHUB-USERNAME
+# Frontend – Yeshi
+/frontend/                @yeshi398
+
+# CI/CD pipeline (GitHub Actions) – Kelzang
+/.github/                 @KayPee7135
+
+# API contract – backend and frontend must both agree
+/backend/API.md           @17wangmo @yeshi398
+
+# Project documentation – Sonam (Scrum Master / QA & docs)
+/README.md                @SONAM-GITHUB-USERNAME
+/backend/README.md        @17wangmo @Syangchen556
+/frontend/README.md       @yeshi398 @Syangchen556
