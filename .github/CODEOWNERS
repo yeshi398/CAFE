@@ -1,0 +1,9 @@
+# Who reviews what. Replace the placeholders with your real GitHub usernames.
+# GitHub will automatically ask the owner to review pull requests that touch their folder.
+
+/backend/    @YOUR-GITHUB-USERNAME
+/frontend/   @FRIEND-GITHUB-USERNAME
+
+# Shared files – both of you
+/backend/API.md                    @YOUR-GITHUB-USERNAME @FRIEND-GITHUB-USERNAME
+/README.md                         @YOUR-GITHUB-USERNAME @FRIEND-GITHUB-USERNAME
