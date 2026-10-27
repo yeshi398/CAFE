@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* ── CST Café design tokens ──────────────────────────────── */
+@theme {
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-espresso: #2a180e; /* darkest text */
+  --color-coffee: #4a2c1d; /* primary */
+  --color-coffee-light: #6b4430;
+  --color-latte: #c9a682;
+  --color-crema: #ead9c3;
+  --color-cream: #f7efe3; /* page background */
+  --color-foam: #fffaf3; /* cards */
+  --color-ember: #b65a1c; /* muted orange accent (AA on white) */
+  --color-ember-soft: #f6dcc3;
+  --color-saffron: #e9a43c; /* highlights */
+  --color-sage: #3f6b3a; /* success */
+  --color-sage-soft: #dcebd5;
+  --color-chili: #a63a26; /* errors */
+  --color-chili-soft: #f6d8d0;
+  --color-slate-ink: #5d4a3e; /* muted text */
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(42 24 14 / 0.06), 0 8px 24px -12px rgb(42 24 14 / 0.18);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-cream text-espresso font-sans antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display text-coffee;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-saffron);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input, select, textarea {
+    @apply text-espresso;
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 min-h-12 font-semibold transition
+    disabled:opacity-50 disabled:cursor-not-allowed select-none;
+}
+
+@layer components {
+  .btn-primary {
+    @apply btn bg-coffee text-foam hover:bg-coffee-light active:scale-[0.98];
+  }
+  .btn-accent {
+    @apply btn bg-ember text-white hover:brightness-110 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn border-2 border-coffee/20 text-coffee hover:bg-coffee/5;
+  }
+  .btn-success {
+    @apply btn bg-sage text-white;
+  }
+  .btn-danger {
+    @apply btn bg-chili text-white hover:brightness-110;
+  }
+  .btn-sm {
+    @apply min-h-9 px-3.5 text-sm;
+  }
+  .card {
+    @apply bg-foam rounded-[var(--radius-card)] shadow-[var(--shadow-card)] border border-coffee/5;
+  }
+  .field {
+    @apply w-full rounded-xl border-2 border-coffee/15 bg-white px-4 min-h-12 text-base
+      placeholder:text-slate-ink/50 focus:border-ember focus:outline-none;
+  }
+  .label {
+    @apply block text-sm font-semibold text-coffee mb-1.5;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
+  }
+  /* A subtle woven pattern – a nod to Bhutanese textile borders */
+  .kira-band {
+    background-image: repeating-linear-gradient(
+        90deg,
+        var(--color-ember) 0 14px,
+        var(--color-saffron) 14px 20px,
+        var(--color-coffee) 20px 34px,
+        var(--color-crema) 34px 40px
+      );
+  }
+}
+
+/* ── Printing receipts ─────────────────────────────────── */
+@media print {
+  @page {
+    size: A5 portrait;
+    margin: 10mm;
+  }
+  body {
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+}
