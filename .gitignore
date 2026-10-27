@@ -1,0 +1,21 @@
+# Dependencies & builds
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# Secrets – NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+npm-debug.log*
