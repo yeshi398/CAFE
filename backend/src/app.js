@@ -38,3 +38,7 @@ export function createApp() {
   app.use(errorHandler);
   return app;
 }
+
+// Vercel uses the default export as the serverless handler
+const app = createApp();
+export default app;
