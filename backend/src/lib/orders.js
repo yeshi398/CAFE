@@ -29,6 +29,19 @@ function isDuplicateKey(err) {
   return err?.code === 11000;
 }
 
+/** True when a duplicate-key error came from the one-open-order-per-table index. */
+function isTableClash(err) {
+  return Boolean(err?.keyPattern?.activeTable || err?.keyValue?.activeTable !== undefined);
+}
+
+function tableTakenError(tableNumber) {
+  return new ApiError(
+    409,
+    `Table ${tableNumber} already has an order in progress. Please choose another table, or ask at the counter.`,
+    { fields: { tableNumber: `Table ${tableNumber} is already taken` } }
+  );
+}
+
 /* ───────────────────────── Create order ───────────────────────── */
 
 /**
@@ -60,6 +73,9 @@ export async function createOrder(rawInput) {
         fields: { tableNumber: `Tables are numbered 1–${settings.tableCount}` },
       });
     }
+    // Quick check so the customer gets a clear message straight away.
+    // (The unique index on activeTable is the real guarantee – see step 7.)
+    if (await Order.exists({ activeTable: tableNumber })) throw tableTakenError(tableNumber);
   }
 
   // 4. Merge repeated lines of the same item
@@ -122,6 +138,8 @@ export async function createOrder(rawInput) {
         customerPhone: input.customerPhone,
         orderType: input.orderType,
         tableNumber,
+        // Locks the table until staff complete or cancel this order.
+        ...(tableNumber ? { activeTable: tableNumber } : {}),
         specialInstructions: input.specialInstructions,
         items,
         subtotal,
@@ -139,6 +157,8 @@ export async function createOrder(rawInput) {
       // Same checkout submitted twice at the same moment → return the saved order.
       const dup = await Order.findOne({ idempotencyKey: input.idempotencyKey }).select("+accessToken").lean();
       if (dup) return { order: dup, created: false };
+      // Someone else took this table a split second before us.
+      if (isTableClash(err)) throw tableTakenError(tableNumber);
       // Otherwise the order ID clashed (unique index caught it) → take the next number.
       continue;
     }
@@ -269,6 +289,8 @@ export async function adminUpdateOrder(rawId, { orderStatus, paymentStatus }, ad
     }
     o.orderStatus = orderStatus;
     if (orderStatus === "COMPLETED") o.completedAt = now;
+    // Order is closed → the table is free for the next customer.
+    if (orderStatus === "COMPLETED" || orderStatus === "CANCELLED") o.activeTable = undefined;
     o.history.push({ type: "ORDER", value: orderStatus, at: now, by: adminEmail });
   }
 

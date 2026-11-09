@@ -46,6 +46,11 @@ const OrderSchema = new mongoose.Schema(
     customerPhone: { type: String, trim: true, default: "" },
     orderType: { type: String, enum: ORDER_TYPES, required: true },
     tableNumber: { type: Number, default: null },
+    // NEW: Set to the table number while a dine-in order is open (not completed or
+    // cancelled), and removed when it closes. The unique index below means the
+    // database itself refuses a second open order on the same table – even if
+    // two customers submit at exactly the same moment.
+    activeTable: { type: Number },
     specialInstructions: { type: String, trim: true, maxlength: 300, default: "" },
 
     items: { type: [OrderItemSchema], validate: (v) => v.length > 0 },
@@ -67,5 +72,11 @@ const OrderSchema = new mongoose.Schema(
 OrderSchema.index({ createdAt: -1 });
 OrderSchema.index({ orderStatus: 1, createdAt: -1 });
 OrderSchema.index({ paymentStatus: 1, createdAt: -1 });
+// NEW: One open dine-in order per table. Only orders that HAVE activeTable are in
+// this index, so takeaway and finished orders never clash.
+OrderSchema.index(
+  { activeTable: 1 },
+  { unique: true, partialFilterExpression: { activeTable: { $exists: true } }, name: "one_open_order_per_table" }
+);
 
 export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
