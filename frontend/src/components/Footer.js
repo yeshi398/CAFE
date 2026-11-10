@@ -38,7 +38,7 @@ export default async function Footer() {
         </div>
       </div>
       <p className="border-t border-white/10 py-4 text-center text-xs text-crema/60">
-        College of Science and Technology · Royal University of Bhutan
+        College of Science and Technology · Royal University of Bhutan · Deployed with CI/CD
       </p>
     </footer>
   );
