@@ -1,0 +1,92 @@
+# CST Café – Continuous Integration
+# Runs on every pull request into main (and every push to main).
+# If a check fails, the PR shows a red ✗ and the problem is caught BEFORE
+# Vercel deploys it. Vercel then handles CD after the merge.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend – install, syntax check, API test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # A temporary MongoDB just for this test run (never touches Atlas).
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/cst-cafe-ci
+      AUTH_SECRET: ci-only-test-secret-not-used-anywhere-else-123456
+      FRONTEND_URL: http://localhost:3000
+      PORT: 4000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check every backend file
+        run: |
+          for f in $(git ls-files 'src/*.js' 'scripts/*.js'); do
+            node --check "$f"
+          done
+
+      - name: Load sample menu into the test database
+        run: npm run seed
+
+      - name: Start the API
+        run: |
+          node src/server.js > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fs http://localhost:4000/api/health && exit 0
+            sleep 1
+          done
+          echo "API did not start:"; cat api.log; exit 1
+
+      - name: Test the menu endpoint returns items
+        run: |
+          curl -fs http://localhost:4000/api/menu -o menu.json
+          node -e "const m=require('./menu.json'); if(!m.items?.length) { console.error('Menu is empty'); process.exit(1) } console.log('✔ Menu has', m.items.length, 'items in', m.categories.length, 'categories')"
+
+  frontend:
+    name: Frontend – install and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the website
+        run: npm run build
